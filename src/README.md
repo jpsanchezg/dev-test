@@ -1,5 +1,10 @@
 # Prueba tecnica amigo-veloz
+Esta prueba tecnica esta desarrollada en express js
 
+Para ejecutar el programa:
+```
+  node server.js
+```
 # Diseño de base de datos
 <img src="/src/media/diagrama_de_base_de_datos.png" style="display:block;float:none;margin-left:auto;margin-right:auto;width:80%">
 
