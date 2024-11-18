@@ -7,8 +7,8 @@ const Pagos = require('./pagosModel');
 
 
 // Relación Usuario <-> Oferta (a través de ofertasXusuario)
-Usuario.belongsToMany(Oferta, { through: OfertasXUsuario, foreignKey: 'usuarioId' });
-Oferta.belongsToMany(Usuario, { through: OfertasXUsuario, foreignKey: 'ofertaId' });
+Usuario.belongsToMany(Oferta, { through: OfertasXUsuario, foreignKey: 'usuarioId', as: 'ofertas',uniqueKey: false });
+Oferta.belongsToMany(Usuario, { through: OfertasXUsuario, foreignKey: 'ofertaId', as: 'usuarios', uniqueKey: false });
 
 // Relación Usuario <-> Prestamo
 Usuario.hasMany(Prestamo, { foreignKey: 'userId' });

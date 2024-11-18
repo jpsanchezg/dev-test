@@ -10,4 +10,14 @@ const getOfertas = async (req, res, next) => {
     }
 };
 
-module.exports = { getOfertas };
+
+const crearOfertasUsuario = async (req, res, next) => {
+    try {
+        const { monto, plazo, tasa_interes } = req.body;
+        const newOferta = await Oferta.create({ monto, plazo, tasa_interes });
+        res.status(201).json(newOferta);
+    } catch (error) {
+        next(error);
+    }
+};
+module.exports = { getOfertas, crearOfertasUsuario };

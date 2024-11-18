@@ -1,7 +1,7 @@
 const express = require('express');
-const { createUser, crearOfertasUsuario } = require('../controllers/userController');
+const { createUser } = require('../controllers/userController');
 const { crearPrestamosUsuario } = require('../controllers/prestamoController');
-const { getOfertas } = require('../controllers/ofertasController');
+const { getOfertas, crearOfertasUsuario } = require('../controllers/ofertasController');
 
 
 const isAdmin = require('../middlewares/isAdmin');

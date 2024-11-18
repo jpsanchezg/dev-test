@@ -108,16 +108,14 @@ const crearPrestamosUsuario = async (req, res, next) => {
                 usuarioId: userId, 
                 ofertaId: ofertaId,
             });
-            console.log('Oferta asignada automáticamente al usuario.');
         }
 
-        const monto = oferta.monto;
         const total = oferta.monto;
         const nuevoPrestamo = await Prestamo.create({
             userId,
             ofertaId,
             tasa_interes: oferta.tasa_interes,
-            monto,
+            monto: oferta.monto,
             plazo,
             pagado: 0,
             completado: false,
