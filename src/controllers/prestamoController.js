@@ -5,11 +5,71 @@ const Oferta = require('../models/ofertaModel');
 const Pagos = require('../models/pagosModel');
 const pagosUsuario = async (req, res, next) => {
     try {
-        const { name, email, password } = req.body;
-        const newUser = await Usuario.create({ name, email, password });
-        res.status(201).json(newUser);
+        const  loanId  = req.params.loanId;
+        const { montoPago } = req.body;
+
+        if (!montoPago || montoPago <= 0) {
+            return res.status(400).json({ error: 'El monto del pago debe ser mayor a 0.' });
+        }
+
+        const prestamo = await Prestamo.findByPk(loanId, {
+            include: {
+                model: Pagos, 
+                where: { estado: 'pendiente' }, 
+                order: [['fechaPago', 'ASC']], 
+            },
+        });
+
+        if (!prestamo) {
+            return res.status(404).json({ error: 'Préstamo no encontrado.' });
+        }
+
+        if (prestamo.Pagos.length === 0) {
+            return res.status(400).json({ error: 'No hay pagos pendientes para este préstamo.' });
+        }
+
+        let montoRestante = montoPago;
+        for (const pago of prestamo.Pagos) {
+            if (montoRestante <= 0) break;
+
+            const restantePago = pago.monto_pago - pago.monto_pagado;
+
+            if (montoRestante >= restantePago) {
+                pago.monto_pagado = pago.monto_pago;
+                pago.estado = 'pagado';
+                montoRestante -= restantePago;
+            } else {
+                pago.monto_pagado += montoRestante;
+                montoRestante = 0;
+            }
+
+            await pago.save(); 
+        }
+
+        const pagosPendientes = await Pagos.count({
+            where: { prestamoId: loanId, estado: 'pendiente' },
+        });
+
+        if (pagosPendientes === 0) {
+            prestamo.pagado = prestamo.monto; 
+            prestamo.completado = true; 
+            await prestamo.save();
+        } else {
+            const montoPagadoAnterior = prestamo.pagado;
+            const montoRealPagado = montoPago - montoRestante; 
+            prestamo.pagado = montoPagadoAnterior + montoRealPagado;
+            await prestamo.save();
+        }
+
+        res.status(200).json({
+            message: 'Pago aplicado con éxito.',
+            prestamo,
+        });
     } catch (error) {
-        next(error);
+        console.error('Error al aplicar el pago:', error);
+        res.status(500).json({
+            error: 'Ocurrió un error al aplicar el pago. Por favor, inténtelo de nuevo.',
+        });
     }
 };
 
@@ -18,7 +78,6 @@ const crearPrestamosUsuario = async (req, res, next) => {
         const userId = req.params.id;
         const { ofertaId, plazo } = req.body;
 
-        // Validación inicial
         if (!plazo || plazo <= 0) {
             return res.status(400).json({ error: 'Plazo inválido. Debe ser mayor a 0.' });
         }
@@ -26,9 +85,7 @@ const crearPrestamosUsuario = async (req, res, next) => {
             return res.status(400).json({ error: 'OfertaId es obligatorio.' });
         }
 
-        console.log('Procesando préstamo para UserId:', userId, 'OfertaId:', ofertaId);
 
-        // Verificar usuario y oferta en paralelo
         const [usuario, oferta] = await Promise.all([
             Usuario.findByPk(userId),
             Oferta.findByPk(ofertaId),
@@ -42,20 +99,18 @@ const crearPrestamosUsuario = async (req, res, next) => {
             return res.status(404).json({ error: 'Oferta no encontrada.' });
         }
 
-        // Verificar si la oferta está asignada al usuario; crear la relación si no existe
         let ofertaAsignada = await OfertasXUsuario.findOne({
-            where: { usuarioId: userId, ofertaId: ofertaId }, // Ajusta los nombres según el modelo
+            where: { usuarioId: userId, ofertaId: ofertaId }, 
         });
 
         if (!ofertaAsignada) {
             const ofertaAsignada = await OfertasXUsuario.create({
-                usuarioId: userId, // Campo correcto definido en el modelo
+                usuarioId: userId, 
                 ofertaId: ofertaId,
             });
             console.log('Oferta asignada automáticamente al usuario.');
         }
 
-        // Crear el préstamo
         const monto = oferta.monto;
         const total = oferta.monto;
         const nuevoPrestamo = await Prestamo.create({
@@ -68,21 +123,18 @@ const crearPrestamosUsuario = async (req, res, next) => {
             completado: false,
         });
 
-        // Generar calendario de pagos
         const fechaInicio = new Date();
         const montoPorSemana = total / plazo;
         const calendarioPagos = Array.from({ length: plazo }, (_, i) => ({
             prestamoId: nuevoPrestamo.id,
-            monto_pago: parseFloat(montoPorSemana.toFixed(2)), // Incluye el campo obligatorio
-            monto_pagado: 0, // Inicialmente 0
-            estado: 'pendiente', // Estado inicial
-            fechaPago: new Date(fechaInicio.getTime() + (i + 1) * 7 * 24 * 60 * 60 * 1000), // Fecha de pago
+            monto_pago: parseFloat(montoPorSemana.toFixed(2)), 
+            monto_pagado: 0, 
+            estado: 'pendiente', 
+            fechaPago: new Date(fechaInicio.getTime() + (i + 1) * 7 * 24 * 60 * 60 * 1000), 
         }));
 
-        // Crear pagos en la base de datos
         await Pagos.bulkCreate(calendarioPagos);
 
-        // Responder
         res.status(201).json({
             message: 'Préstamo creado con éxito.',
             prestamo: nuevoPrestamo,
@@ -97,5 +149,7 @@ const crearPrestamosUsuario = async (req, res, next) => {
 
 
 };
+
+
 
 module.exports = { pagosUsuario, crearPrestamosUsuario };
