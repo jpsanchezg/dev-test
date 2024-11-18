@@ -1,11 +1,11 @@
-const User = require('../models/userModel');
+const Usuario = require('../models/userModel');
 const Oferta = require('../models/ofertaModel');
 
 // Crear un nuevo usuario
 const createUser = async (req, res, next) => {
     try {
         const { nombre, email, es_admin } = req.body;
-        const newUser = await User.create({ nombre, email, es_admin });
+        const newUser = await Usuario.create({ nombre, email, es_admin });
         res.status(201).json(newUser);
     } catch (error) {
         next(error);
@@ -23,14 +23,5 @@ const crearOfertasUsuario = async (req, res, next) => {
     }
 };
 
-const crearPrestamosUsuario = async (req, res, next) => {
-    try {
-        const { name, email, password } = req.body;
-        const newUser = await User.create({ name, email, password });
-        res.status(201).json(newUser);
-    } catch (error) {
-        next(error);
-    }
-};
 
-module.exports = { createUser, crearOfertasUsuario, crearPrestamosUsuario };
+module.exports = { createUser, crearOfertasUsuario };

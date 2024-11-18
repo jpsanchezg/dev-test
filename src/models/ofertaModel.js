@@ -8,6 +8,5 @@ const Oferta = sequelize.define('Oferta', {
     tasa_interes: { type: DataTypes.FLOAT, allowNull: false },
 }, { timestamps: true });
 
-Oferta.belongsTo(User, { foreignKey: 'usuario_id' });
 
 module.exports = Oferta;

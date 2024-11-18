@@ -1,4 +1,4 @@
-const User = require('../models/userModel');
+const Usuario = require('../models/userModel');
 const Oferta = require('../models/ofertaModel');
 
 const getOfertas = async (req, res, next) => {
