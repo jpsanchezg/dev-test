@@ -4,7 +4,7 @@ const Prestamo = require('./prestamoModel');
 const Oferta = require('./ofertaModel');
 const OfertasXUsuario = require('./ofertasXusuarioModel');
 const Pagos = require('./pagosModel');
-
+const Rol = require('./rolModel');
 
 // Relación Usuario <-> Oferta (a través de ofertasXusuario)
 Usuario.belongsToMany(Oferta, { through: OfertasXUsuario, foreignKey: 'usuarioId', as: 'ofertas',uniqueKey: false });
@@ -22,6 +22,8 @@ Prestamo.belongsTo(Oferta, { foreignKey: 'ofertaId' });
 Prestamo.hasMany(Pagos, { foreignKey: 'prestamoId' });
 Pagos.belongsTo(Prestamo, { foreignKey: 'prestamoId' });
 
+Rol.hasMany(Usuario, { foreignKey: 'rolId', as: 'usuarios' });
+Usuario.belongsTo(Rol, { foreignKey: 'rolId', as: 'rol' });
 const initializeModels = async () => {
     try {
         await sequelize.sync({ alter: true }); 
