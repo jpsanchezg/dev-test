@@ -1,7 +1,7 @@
 # Prueba tecnica amigo-veloz
 
 # Diseño de base de datos
-<img src="/media/diagrama_de_base_de_datos.png" style="display:block;float:none;margin-left:auto;margin-right:auto;width:80%">
+<img src="/src/media/diagrama_de_base_de_datos.png" style="display:block;float:none;margin-left:auto;margin-right:auto;width:80%">
 
 ## Referencia API
 
