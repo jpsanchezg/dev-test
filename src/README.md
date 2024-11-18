@@ -244,5 +244,5 @@
 
 | Parametro | Tipo     | Descripcion                |
 | :-------- | :------- | :------------------------- |
-| `No necesita` |  |   |
+| `No necesita` |  |La petición no requiere parámetros.   |
 
